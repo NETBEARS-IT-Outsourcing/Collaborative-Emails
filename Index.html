@@ -1,0 +1,185 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+
+<script>
+
+$(document).ready(function() {
+var finalTO="";
+var finalCC="";
+var finalBCC="";
+var finalSubj="";
+
+
+ $( "#save" ).click(function( event ) {
+    var emailRecipient=document.getElementById("emailRecipient").value;
+    if (emailRecipient.indexOf('@')<0) {$("#errmsg6").html("Invalid email address detected in 'TO' field.").show().fadeOut(10000).css('color', 'red');}
+      else
+      {
+      var emailCC=document.getElementById("emailCC").value;
+      if (emailCC.length>0 && emailCC.indexOf('@')<0) {$("#errmsg6").html("Invalid email address detected in 'CC' field.").show().fadeOut(10000).css('color', 'red');}
+        else
+        {
+        var emailBCC=document.getElementById("emailBCC").value;
+        if (emailBCC.length>0 && emailBCC.indexOf('@')<0) {$("#errmsg6").html("Invalid email address detected in 'BCC' field.").show().fadeOut(10000).css('color', 'red');}
+          else
+          {
+          var emailSubject=document.getElementById("emailSubject").value;
+          if (emailSubject.length<1)  {$("#errmsg6").html("'Subject' field cannot be empty.").show().fadeOut(10000).css('color', 'red');}
+            else
+            {
+            finalTO=emailRecipient;
+            finalCC=emailCC;
+            finalBCC=emailBCC;
+            finalSubj=emailSubject;
+            
+            uploadFileDraft();
+            $("#errmsg6").html("Saving mail as draft...").show().fadeOut(10000).css('color', 'green');
+            }
+    }}}
+});
+
+ $( "#submit" ).click(function( event ) {
+    var emailRecipient=document.getElementById("emailRecipient").value;
+    if (emailRecipient.indexOf('@')<0) {$("#errmsg6").html("Invalid email address detected in 'TO' field.").show().fadeOut(10000).css('color', 'red');}
+      else
+      {
+      var emailCC=document.getElementById("emailCC").value;
+      if (emailCC.length>0 && emailCC.indexOf('@')<0) {$("#errmsg6").html("Invalid email address detected in 'CC' field.").show().fadeOut(10000).css('color', 'red');}
+        else
+        {
+        var emailBCC=document.getElementById("emailBCC").value;
+        if (emailBCC.length>0 && emailBCC.indexOf('@')<0) {$("#errmsg6").html("Invalid email address detected in 'BCC' field.").show().fadeOut(10000).css('color', 'red');}
+          else
+          {
+          var emailSubject=document.getElementById("emailSubject").value;
+          if (emailSubject.length<1)  {$("#errmsg6").html("'Subject' field cannot be empty.").show().fadeOut(10000).css('color', 'red');}
+            else
+            {
+            finalTO=emailRecipient;
+            finalCC=emailCC;
+            finalBCC=emailBCC;
+            finalSubj=emailSubject;
+            
+            console.log('before uploadFile');
+            uploadFile();
+            $("#errmsg6").html("Sending email...").show().fadeOut(10000).css('color', 'green');
+            }}
+    }}  
+});
+
+});
+
+function uploadFileDraft(){
+    google.script.run
+       .withSuccessHandler(fileUploadedDraft)
+       .uploadFiles(document.getElementById("emailContent"));
+       
+    console.log('back');
+    //return false;
+}
+
+function uploadFile() {
+console.log('inside uploadFile');
+
+    google.script.run
+       .withSuccessHandler(finalConfirmationSendMail)
+       .sendMail(document.getElementById("emailContent"));
+       
+    console.log('back');
+    //return false;
+  }
+  
+function fileUploadedDraft(status) {
+    if (status.conf==0)
+    {
+    console.log('ERROR='+status.error);
+    }
+    {    
+    console.log(status.URLs);
+
+    google.script.run
+       .withSuccessHandler(finalConfirmationSaveMail)
+       .saveDraft(document.getElementById("emailRecipient").value,
+                 document.getElementById("emailCC").value,
+                 document.getElementById("emailBCC").value,
+                 document.getElementById("emailSubject").value,
+                 status.URLs);
+    }
+}
+  
+function fileUploaded(status) {
+    if (status.conf==0)
+    {
+    console.log('ERROR='+status.error);
+    }
+    {    
+    console.log(status.URLs);
+
+    google.script.run
+       .withSuccessHandler(finalConfirmationSendMail)
+       .sendMail(document.getElementById("emailRecipient").value,
+                 document.getElementById("emailCC").value,
+                 document.getElementById("emailBCC").value,
+                 document.getElementById("emailSubject").value,
+                 status.URLs);
+    }
+} 
+  
+function finalConfirmationSendMail(){
+    $("#output").html('Email was sent successfully. Check your "Sent Items" in GMail to double check output format.').show().fadeOut(30000).css('color', 'green');
+    
+}
+
+function finalConfirmationSaveMail(){
+    $("#output").html('Email was saved as draft successfully. Check your "Drafts" folder in GMail for later edit.').show().fadeOut(30000).css('color', 'green');
+    
+}
+</script>
+
+
+<form id='emailContent'>
+    <input type="email" size="30" maxlength="500" id="emailRecipient" name="emailRecipient" placeholder="TO:">
+    
+    <input type="email" size="30" maxlength="500" id="emailCC" name="emailCC" placeholder="CC:">
+
+    <input type="email" size="30" maxlength="500" id="emailBCC" name="emailBCC" placeholder="BCC:">
+
+    <input type="text" size="30" maxlength="500" id="emailSubject" name="emailSubject" placeholder="Subject:">
+
+<div style='text-align:left'>
+    <input type="file" name="attach1">
+</div>
+<div style='text-align:left'>
+    <input type="file" name="attach2">
+</div>
+<div style='text-align:left'>    
+    <input type="file" name="attach3">
+</div>
+<div style='text-align:left'>
+    <input type="file" name="attach4">
+</div>
+<div style='text-align:left'>
+    <input type="file" name="attach5">
+</div>
+</form>
+
+
+<div>
+&nbsp;
+&nbsp;
+&nbsp;
+</div>
+<div>
+   <input type="submit" id="submit" value="Send email" style="font-size:1em">
+   &nbsp;&nbsp;&nbsp;
+   <input type="button" id="save" value="Save as draft" style="font-size:1em" />
+</div>
+
+<div style='text-align:left'>
+<span id="errmsg6"></span>
+</div>
+<span id="output"></span>
